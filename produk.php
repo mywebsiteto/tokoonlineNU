@@ -1,50 +1,61 @@
 <?php 
-session_start();
-include '../dbconnect.php';
-$orderids = $_GET['orderid'];
-$liatcust = mysqli_query($conn,"select * from login l, cart c where orderid='$orderids' and l.userid=c.userid");
-$checkdb = mysqli_fetch_array($liatcust);
-date_default_timezone_set("Asia/Bangkok");
-
-if(isset($_POST['kirim']))
-	{
-		$updatestatus = mysqli_query($conn,"update cart set status='Pengiriman' where orderid='$orderids'");
-		$del =  mysqli_query($conn,"delete from konfirmasi where orderid='$orderids'");
+	session_start();
+	include '../dbconnect.php';
+			
+	if(isset($_POST["addproduct"])) {
+		$namaproduk=$_POST['namaproduk'];
+		$idkategori=$_POST['idkategori'];
+		$deskripsi=$_POST['deskripsi'];
+		$rate=$_POST['rate'];
+		$hargabefore=$_POST['hargabefore'];
+		$hargaafter=$_POST['hargaafter'];
 		
-		if($updatestatus&&$del){
-			echo " <div class='alert alert-success'>
-			<center>Pesanan dikirim.</center>
-		  </div>
-		<meta http-equiv='refresh' content='1; url= manageorder.php'/>  ";
-		} else {
-			echo "<div class='alert alert-warning'>
-			Gagal Submit, silakan coba lagi
-		  </div>
-		 <meta http-equiv='refresh' content='1; url= manageorder.php'/> ";
+		$nama_file = $_FILES['uploadgambar']['name'];
+		$ext = pathinfo($nama_file, PATHINFO_EXTENSION);
+		$random = crypt($nama_file, time());
+		$ukuran_file = $_FILES['uploadgambar']['size'];
+		$tipe_file = $_FILES['uploadgambar']['type'];
+		$tmp_file = $_FILES['uploadgambar']['tmp_name'];
+		$path = "../produk/".$random.'.'.$ext;
+		$pathdb = "produk/".$random.'.'.$ext;
+
+
+		if($tipe_file == "image/jpeg" || $tipe_file == "image/png"){
+		  if($ukuran_file <= 5000000){ 
+			if(move_uploaded_file($tmp_file, $path)){ 
+			
+			  $query = "insert into produk (idkategori, namaproduk, gambar, deskripsi, rate, hargabefore, hargaafter)
+			  values('$idkategori','$namaproduk','$pathdb','$deskripsi','$rate','$hargabefore','$hargaafter')";
+			  $sql = mysqli_query($conn, $query); // Eksekusi/ Jalankan query dari variabel $query
+			  
+			  if($sql){ 
+				
+				echo "<br><meta http-equiv='refresh' content='5; URL=produk.php'> You will be redirected to the form in 5 seconds";
+					
+			  }else{
+				// Jika Gagal, Lakukan :
+				echo "Sorry, there's a problem while submitting.";
+				echo "<br><meta http-equiv='refresh' content='5; URL=produk.php'> You will be redirected to the form in 5 seconds";
+			  }
+			}else{
+			  // Jika gambar gagal diupload, Lakukan :
+			  echo "Sorry, there's a problem while uploading the file.";
+			  echo "<br><meta http-equiv='refresh' content='5; URL=produk.php'> You will be redirected to the form in 5 seconds";
+			}
+		  }else{
+			// Jika ukuran file lebih dari 1MB, lakukan :
+			echo "Sorry, the file size is not allowed to more than 1mb";
+			echo "<br><meta http-equiv='refresh' content='5; URL=produk.php'> You will be redirected to the form in 5 seconds";
+		  }
+		}else{
+		  // Jika tipe file yang diupload bukan JPG / JPEG / PNG, lakukan :
+		  echo "Sorry, the image format should be JPG/PNG.";
+		  echo "<br><meta http-equiv='refresh' content='5; URL=produk.php'> You will be redirected to the form in 5 seconds";
 		}
-		
+	
 	};
+	?>
 
-if(isset($_POST['selesai']))
-	{
-		$updatestatus = mysqli_query($conn,"update cart set status='Selesai' where orderid='$orderids'");
-		
-		if($updatestatus){
-			echo " <div class='alert alert-success'>
-			<center>Transaksi diselesaikan.</center>
-		  </div>
-		<meta http-equiv='refresh' content='1; url= manageorder.php'/>  ";
-		} else {
-			echo "<div class='alert alert-warning'>
-			Gagal Submit, silakan coba lagi
-		  </div>
-		 <meta http-equiv='refresh' content='1; url= manageorder.php'/> ";
-		}
-		
-	};
-
-?>
- 
 <!doctype html>
 <html class="no-js" lang="en">
 
@@ -54,7 +65,7 @@ if(isset($_POST['selesai']))
       type="image/png" 
       href="../favicon.png">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>TOKO OnlineNU - Pesanan <?php echo $checkdb['namalengkap']; ?></title>
+    <title>Kelola Produk - TOKO OnlineNU</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" type="image/png" href="assets/images/icon/favicon.ico">
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
@@ -81,9 +92,6 @@ if(isset($_POST['selesai']))
     <link rel="stylesheet" href="assets/css/responsive.css">
     <!-- modernizr css -->
     <script src="assets/js/vendor/modernizr-2.8.3.min.js"></script>
-	
-	
-	
 </head>
 
 <body>
@@ -105,15 +113,15 @@ if(isset($_POST['selesai']))
                         <ul class="metismenu" id="menu">
 							<li><a href="index.php"><span>Home</span></a></li>
 							<li><a href="../"><span>Kembali ke Toko</span></a></li>
-							<li class="active">
+							<li>
                                 <a href="manageorder.php"><i class="ti-dashboard"></i><span>Kelola Pesanan</span></a>
                             </li>
-							<li>
+							<li class="active">
                                 <a href="javascript:void(0)" aria-expanded="true"><i class="ti-layout"></i><span>Kelola Toko
                                     </span></a>
                                 <ul class="collapse">
                                     <li><a href="kategori.php">Kategori</a></li>
-                                    <li><a href="produk.php">Produk</a></li>
+                                    <li class="active"><a href="produk.php">Produk</a></li>
 									<li><a href="pembayaran.php">Metode Pembayaran</a></li>
                                 </ul>
                             </li>
@@ -167,9 +175,8 @@ if(isset($_POST['selesai']))
                     </div>
                 </div>
             </div>
-            <!-- header area end -->
-			
-			
+            
+            
             <!-- page title area end -->
             <div class="main-content-inner">
                
@@ -179,121 +186,57 @@ if(isset($_POST['selesai']))
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-sm-flex justify-content-between align-items-center">
-									<h3>Order id : #<?php echo $orderids ?></h3>
-									
-								</div>
-                                   <p><?php echo $checkdb['namalengkap']; ?> (<?php echo $checkdb['alamat']; ?>)</p>
-								<p>Waktu order : <?php echo $checkdb['tglorder']; ?></p>
-									
-									<?php
-									?>
-								   <div class="data-tables datatable-dark">
+									<h2>Daftar Produk</h2>
+									<button style="margin-bottom:20px" data-toggle="modal" data-target="#myModal" class="btn btn-info col-md-2">Tambah Produk</button>
+                                </div>
+                                    <div class="data-tables datatable-dark">
 										 <table id="dataTable3" class="display" style="width:100%"><thead class="thead-dark">
 											<tr>
-												<th>No</th>
-												<th>Produk</th>
-												<th>Jumlah</th>
-												<th>Harga</th>
-												<th>Total</th>
-												
+												<th>No.</th>
+												<th>Gambar</th>
+												<th>Nama Produk</th>
+												<th>Kategori</th>
+												<th>Harga Diskon</th>
+												<th>Deskripsi</th>
+												<th>Rate</th>
+												<th>Harga Awal</th>
+												<th>Tanggal</th>
 											</tr></thead><tbody>
 											<?php 
-											$brgs=mysqli_query($conn,"SELECT * from detailorder d, produk p where orderid='$orderids' and d.idproduk=p.idproduk order by d.idproduk ASC");
+											$brgs=mysqli_query($conn,"SELECT * from kategori k, produk p where k.idkategori=p.idkategori order by idproduk ASC");
 											$no=1;
 											while($p=mysqli_fetch_array($brgs)){
-												$total = $p['qty']*$p['hargaafter'];
-												
-												$result = mysqli_query($conn,"SELECT SUM(d.qty*p.hargaafter) AS count FROM detailorder d, produk p where orderid='$orderids' and d.idproduk=p.idproduk order by d.idproduk ASC");
-												$row = mysqli_fetch_assoc($result);
-												$cekrow = mysqli_num_rows($result);
-												$count = $row['count'];
-												
+
 												?>
 												
 												<tr>
 													<td><?php echo $no++ ?></td>
+													<td><img src="../<?php echo $p['gambar'] ?>" width="50%"\></td>
 													<td><?php echo $p['namaproduk'] ?></td>
-													<td><?php echo $p['qty'] ?></td>
-													<td>Rp<?php echo number_format($p['hargaafter']) ?></td>
-													<td>Rp<?php echo number_format($total) ?></td>
+													<td><?php echo $p['namakategori'] ?></td>
+													<td><?php echo $p['hargaafter'] ?></td>
+													<td><?php echo $p['deskripsi'] ?></td>
+													<td><?php echo $p['rate'] ?></td>
+													<td><?php echo $p['hargabefore'] ?></td>
+													<td><?php echo $p['tgldibuat'] ?></td>
 													
-												</tr>
-												
+												</tr>		
 												
 												<?php 
 											}
+											
+												
+											
+		
 											?>
 										</tbody>
-										<tfoot>
-											<tr>
-												<th colspan="4" style="text-align:right">Total:</th>
-												<th>Rp<?php 
-												
-												$result1 = mysqli_query($conn,"SELECT SUM(d.qty*p.hargaafter) AS count FROM detailorder d, produk p where orderid='$orderids' and d.idproduk=p.idproduk order by d.idproduk ASC");
-												$cekrow = mysqli_num_rows($result1);
-												$row1 = mysqli_fetch_assoc($result1);
-												$count = $row1['count'];
-												if($cekrow > 0){
-													echo number_format($count);
-													} else {
-														echo 'No data';
-													}?></th>
-											</tr>
-										</tfoot>
 										</table>
-										
                                     </div>
-									<br>
-									<?php
-									
-									if($checkdb['status']=='Confirmed'){
-										$ambilinfo = mysqli_query($conn,"select * from konfirmasi where orderid='$orderids'");
-										while($tarik=mysqli_fetch_array($ambilinfo)){		
-										$met = $tarik['payment'];
-										$namarek = $tarik['namarekening'];
-										$tglb = $tarik['tglbayar'];
-										echo '
-										Informasi Pembayaran
-									<div class="data-tables datatable-dark">
-									<table id="dataTable2" class="display" style="width:100%"><thead class="thead-dark">
-											<tr>
-												<th>Metode</th>
-												<th>Pemilik Rekening</th>
-												<th>Tanggal Pembayaran</th>
-												
-											</tr></thead><tbody>
-											<tr>
-											<td>'.$met.'</td>
-											<td>'.$namarek.'</td>
-											<td>'.$tglb.'</td>
-											</tr>
-											</tbody>
-										</table>
-									</div>
-									<br><br>
-									<form method="post">
-									<input type="submit" name="kirim" class="form-control btn btn-success" value="Kirim" \>
-									</form>
-									';
-									}
-									;
-									} else {
-										echo '
-									<form method="post">
-									<input type="submit" name="selesai" class="form-control btn btn-success" value="Selesaikan" \>
-									</form>
-									';
-									}
-									?>
-									<br>
-                                </div>
-						
+								 </div>
                             </div>
                         </div>
                     </div>
-					
-					
-					
+                </div>
               
                 
                 <!-- row area start-->
@@ -310,19 +253,69 @@ if(isset($_POST['selesai']))
     </div>
     <!-- page container area end -->
 	
+	<!-- modal input -->
+			<div id="myModal" class="modal fade">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title">Tambah Produk</h4>
+						</div>
+						
+						<div class="modal-body">
+						<form action="produk.php" method="post" enctype="multipart/form-data" >
+								<div class="form-group">
+									<label>Nama Produk</label>
+									<input name="namaproduk" type="text" class="form-control" required autofocus>
+								</div>
+								<div class="form-group">
+									<label>Nama Kategori</label>
+									<select name="idkategori" class="form-control">
+									<option selected>Pilih Kategori</option>
+									<?php
+									$det=mysqli_query($conn,"select * from kategori order by namakategori ASC")or die(mysqli_error());
+									while($d=mysqli_fetch_array($det)){
+									?>
+										<option value="<?php echo $d['idkategori'] ?>"><?php echo $d['namakategori'] ?></option>
+										<?php
+								}
+								?>		
+									</select>
+									
+								</div>
+								<div class="form-group">
+									<label>Deskripsi</label>
+									<input name="deskripsi" type="text" class="form-control" required>
+								</div>
+								<div class="form-group">
+									<label>Rating (1-5)</label>
+									<input name="rate" type="number" class="form-control"  min="1" max="5" required>
+								</div>
+								<div class="form-group">
+									<label>Harga Sebelum Diskon</label>
+									<input name="hargabefore" type="number" class="form-control">
+								</div>
+								<div class="form-group">
+									<label>Harga Setelah Diskon</label>
+									<input name="hargaafter" type="number" class="form-control">
+								</div>
+								<div class="form-group">
+									<label>Gambar</label>
+									<input name="uploadgambar" type="file" class="form-control">
+								</div>
+
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-default" data-dismiss="modal">Batal</button>
+								<input name="addproduct" type="submit" class="btn btn-primary" value="Tambah">
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
 	
-	
-	<script type="text/javascript">
-		$(document).ready(function() {
-    $('#dataTable3').DataTable( {
-        dom: 'Bfrtip',
-        buttons: [
-            'print'
-        ]
-    } );
-	} );
+	<script>
 	$(document).ready(function() {
-    $('#dataTable2').DataTable( {
+    $('#dataTable3').DataTable( {
         dom: 'Bfrtip',
         buttons: [
             'print'
@@ -341,20 +334,31 @@ if(isset($_POST['selesai']))
     <script src="assets/js/jquery.slimscroll.min.js"></script>
     <script src="assets/js/jquery.slicknav.min.js"></script>
 		<!-- Start datatable js -->
-	 <script src="https://cdn.datatables.net/buttons/1.6.0/js/buttons.print.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/1.6.0/js/dataTables.buttons.min.js"></script>
+	 <script src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.print.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.5.2/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
     <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
     <script src="https://cdn.datatables.net/responsive/2.2.3/js/responsive.bootstrap.min.js"></script>
 	<script src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.html5.min.js"></script>
-    
+    <!-- start chart js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
+    <!-- start highcharts js -->
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <!-- start zingchart js -->
+    <script src="https://cdn.zingchart.com/zingchart.min.js"></script>
+    <script>
+    zingchart.MODULESDIR = "https://cdn.zingchart.com/modules/";
+    ZC.LICENSE = ["569d52cefae586f634c54f86dc99e6a9", "ee6b7db5b51705a13dc2339db3edaf6d"];
+    </script>
+    <!-- all line chart activation -->
+    <script src="assets/js/line-chart.js"></script>
+    <!-- all pie chart -->
+    <script src="assets/js/pie-chart.js"></script>
     <!-- others plugins -->
     <script src="assets/js/plugins.js"></script>
     <script src="assets/js/scripts.js"></script>
 	
-	
 </body>
-
 </html>

@@ -1,30 +1,19 @@
 <?php 
 	session_start();
 	include '../dbconnect.php';
-		
-	$itungcust = mysqli_query($conn,"select count(userid) as jumlahcust from login where role='Member'");
-	$itungcust2 = mysqli_fetch_assoc($itungcust);
-	$itungcust3 = $itungcust2['jumlahcust'];
-	
-	$itungorder = mysqli_query($conn,"select count(idcart) as jumlahorder from cart where status not like 'Selesai' and status not like 'Canceled'");
-	$itungorder2 = mysqli_fetch_assoc($itungorder);
-	$itungorder3 = $itungorder2['jumlahorder'];
-	
-	$itungtrans = mysqli_query($conn,"select count(orderid) as jumlahtrans from konfirmasi");
-	$itungtrans2 = mysqli_fetch_assoc($itungtrans);
-	$itungtrans3 = $itungtrans2['jumlahtrans'];
-	
+	date_default_timezone_set("Asia/Bangkok");
 	?>
 
 <!doctype html>
-<html lang="en">
+<html class="no-js" lang="en">
+
 <head>
     <meta charset="utf-8">
 	<link rel="icon" 
       type="image/png" 
       href="../favicon.png">
     <meta http-equiv="x-ua-compatible" content="ie=edge">
-    <title>Admin Panel - TOKO OnlineNU</title>
+    <title>Kelola Pesanan - TOKO OnlineNU</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="shortcut icon" type="image/png" href="assets/images/icon/favicon.ico">
     <link rel="stylesheet" href="assets/css/bootstrap.min.css">
@@ -36,6 +25,14 @@
 	
     <!-- amchart css -->
     <link rel="stylesheet" href="https://www.amcharts.com/lib/3/plugins/export/export.css" type="text/css" media="all" />
+	<!-- Start datatable css -->
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.20/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/responsive/2.2.3/css/responsive.jqueryui.min.css">
+	<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/buttons/1.5.2/css/buttons.dataTables.min.css">
+	
     <!-- others css -->
     <link rel="stylesheet" href="assets/css/typography.css">
     <link rel="stylesheet" href="assets/css/default-css.css">
@@ -62,9 +59,9 @@
                 <div class="menu-inner">
                     <nav>
                         <ul class="metismenu" id="menu">
-							<li class="active"><a href="index.php"><span>Home</span></a></li>
+							<li><a href="index.php"><span>Home</span></a></li>
 							<li><a href="../"><span>Kembali ke Toko</span></a></li>
-							<li>
+							<li class="active">
                                 <a href="manageorder.php"><i class="ti-dashboard"></i><span>Kelola Pesanan</span></a>
                             </li>
 							<li>
@@ -126,104 +123,79 @@
                     </div>
                 </div>
             </div>
-			
-			
-			<!-- header area end -->
-			<?php 
-			/*
-				$periksa_bahan=mysqli_query($conn,"select * from stock_brg where stock <10");
-				while($p=mysqli_fetch_array($periksa_bahan)){	
-					if($p['stock']>=1){	
-						?>	
-						<script>
-							$(document).ready(function(){
-								$('#pesan_sedia').css("color","white");
-								$('#pesan_sedia').append("<i class='ti-flag'></i>");
-							});
-						</script>
-						<?php
-						echo "<div class='alert alert-danger alert-dismissible fade show'><button type='button' class='close' data-dismiss='alert'>&times;</button>Stok  <strong><u>".$p['nama']. "</u> <u>".($p['jenis'])."</u></strong> yang tersisa kurang dari 10</div>";		
-					}
-				}
-				
-				*/
-				?>
+            <!-- header area end -->
 			
             
             <!-- page title area end -->
             <div class="main-content-inner">
-			
-                
-                <div class="sales-report-area mt-5 mb-5">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="single-report mb-xs-30">
-                                <div class="s-report-inner pr--20 pt--30 mb-3">
-                                    <div class="icon"><i class="fa fa-user"></i></div>
-                                    <div class="s-report-title d-flex justify-content-between">
-                                        <h4 class="header-title mb-0">Pelanggan</h4>
-                                    </div>
-                                    <div class="d-flex justify-content-between pb-2">
-                                        <h1><?php echo $itungcust3 ?></h1>
-                                    </div>
-									</div>
-                            </div>
-                        </div>
-                        
-                        <div class="col-md-4">
-                            <div class="single-report">
-                                <div class="s-report-inner pr--20 pt--30 mb-3">
-                                    <div class="icon"><i class="fa fa-book"></i></div>
-                                    <div class="s-report-title d-flex justify-content-between">
-                                        <h4 class="header-title mb-0">Pesanan</h4>
-                                    </div>
-                                    <div class="d-flex justify-content-between pb-2">
-                                        <h1><?php echo $itungorder3 ?></h1>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-						<div class="col-md-4">
-                            <div class="single-report mb-xs-30">
-                                <div class="s-report-inner pr--20 pt--30 mb-3">
-                                    <div class="icon"><i class="fa fa-link"></i></div>
-                                    <div class="s-report-title d-flex justify-content-between">
-                                        <h4 class="header-title mb-0">Konfirmasi Pembayaran</h4>
-                                    </div>
-                                    <div class="d-flex justify-content-between pb-2">
-                                        <h1><?php echo $itungtrans3 ?></h1>
-                                    </div>
-									<!--
-									<button type="button" class="<?php 
-									if($itungtrans3==0){
-										echo 'btn btn-secondary btn-block';
-									} else {
-										echo 'btn btn-primary btn-block';
-									}
-									?>
-									">Lihat Transaksi</button>
-									-->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                
-                <!-- overview area end -->
+               
                 <!-- market value area start -->
                 <div class="row mt-5 mb-5">
                     <div class="col-12">
                         <div class="card">
                             <div class="card-body">
                                 <div class="d-sm-flex justify-content-between align-items-center">
-									<h2>Selamat Datang</h2>
-                                </div>
-                                <div class="market-status-table mt-4">
-                                    Anda masuk sebagai <strong><?php echo $_SESSION['name'] ?></strong>
-									<br>
-									<p>Pada halaman admin, Anda dapat menambah kategori produk, mengelola produk, 
-									mengelola user dan admin, melihat konfirmasi pembayaran</p>
+									<h2>Daftar Pesanan</h2>
+								</div>
+                                    <div class="data-tables datatable-dark">
+										 <table id="dataTable3" class="display" style="width:100%"><thead class="thead-dark">
+											<tr>
+												<th>No</th>
+												<th>ID Pesanan</th>
+												<th>Nama Customer</th>
+												<th>Tanggal Order</th>
+												<th>Total</th>
+												<th>Status</th>
+											</tr></thead><tbody>
+											<?php 
+											$brgs=mysqli_query($conn,"SELECT * from cart c, login l where c.userid=l.userid and status!='Cart' and status!='Selesai' order by idcart ASC");
+											$no=1;
+											while($p=mysqli_fetch_array($brgs)){
+											$orderids = $p['orderid'];
+												?>
+												
+												<tr>
+													<td><?php echo $no++ ?></td>
+													<td><strong><a href="order.php?orderid=<?php echo $p['orderid'] ?>">#<?php echo $p['orderid'] ?></a></strong></td>
+													<td><?php echo $p['namalengkap'] ?></td>
+													<td><?php echo $p['tglorder'] ?></td>
+													<td>Rp<?php 
+												
+												$result1 = mysqli_query($conn,"SELECT SUM(d.qty*p.hargaafter) AS count FROM detailorder d, produk p where orderid='$orderids' and p.idproduk=d.idproduk order by d.idproduk ASC");
+												$cekrow = mysqli_num_rows($result1);
+												$row1 = mysqli_fetch_assoc($result1);
+												$count = $row1['count'];
+												if($cekrow > 0){
+													echo number_format($count);
+													} else {
+														echo 'No data';
+													}?></td>
+													<td><?php 
+													
+													//echo $p['status'] 
+													$orders = $p['orderid'];
+													$cekkonfirmasipembayaran = mysqli_query($conn,"select * from konfirmasi where orderid='$orders'");
+													$cekroww = mysqli_num_rows($cekkonfirmasipembayaran);
+													
+													if($cekroww > 0){
+														echo 'Confirmed';
+													} else {
+														if($p['status']!='Pengiriman'){
+															echo "Menunggu Konfirmasi";
+														} else {
+															echo "Pengiriman";
+														};
+													}
+													
+													?></td>
+												</tr>		
+												<?php 
+											}
+											?>
+										</tbody>
+										</table>
+                                    </div>
+									<a href="datapesanan.php" target="_blank" class="btn btn-info">Export Data</a>
                                 </div>
                             </div>
                         </div>
@@ -235,21 +207,65 @@
             </div>
         </div>
         <!-- main content area end -->
-		
-		
-		
         <!-- footer area start-->
         <footer>
             <div class="footer-area">
-                <p>by Hajir876</p>
+                <p>By Hajir876</p>
             </div>
         </footer>
         <!-- footer area end-->
     </div>
     <!-- page container area end -->
+	
+	<!-- modal input -->
+			<div id="myModal" class="modal fade">
+				<div class="modal-dialog">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h4 class="modal-title">Masukkan stok manual</h4>
+						</div>
+						<div class="modal-body">
+							<form action="tmb_brg_act.php" method="post">
+								<div class="form-group">
+									<label>Nama</label>
+									<input name="nama" type="text" class="form-control" placeholder="Nama Barang" required>
+								</div>
+								<div class="form-group">
+									<label>Jenis</label>
+									<input name="jenis" type="text" class="form-control" placeholder="Jenis / Kategori Barang">
+								</div>
+								<div class="form-group">
+									<label>Stock</label>
+									<input name="stock" type="number" min="0" class="form-control" placeholder="Qty">
+								</div>
+								<div class="form-group">
+									<label>Harga</label>
+									<input name="harga" type="number" min="0" class="form-control" placeholder="Harga">
+								</div>
 
-    <!-- jquery latest version -->
-    <script src="assets/js/vendor/jquery-2.2.4.min.js"></script>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-default" data-dismiss="modal">Batal</button>
+								<input type="submit" class="btn btn-primary" value="Simpan">
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+	
+	<script>	
+	$(document).ready(function() {
+    $('#dataTable3').DataTable( {
+        dom: 'Bfrtip',
+        buttons: [
+            'print'
+        ]
+    } );
+	} );
+	</script>
+	
+	<!-- jquery latest version -->
+    <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
     <!-- bootstrap 4 js -->
     <script src="assets/js/popper.min.js"></script>
     <script src="assets/js/bootstrap.min.js"></script>
@@ -257,7 +273,15 @@
     <script src="assets/js/metisMenu.min.js"></script>
     <script src="assets/js/jquery.slimscroll.min.js"></script>
     <script src="assets/js/jquery.slicknav.min.js"></script>
-
+		<!-- Start datatable js -->
+	 <script src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.print.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.5.2/js/dataTables.buttons.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.js"></script>
+    <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.20/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.3/js/dataTables.responsive.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.2.3/js/responsive.bootstrap.min.js"></script>
+	<script src="https://cdn.datatables.net/buttons/1.5.2/js/buttons.html5.min.js"></script>
     <!-- start chart js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.2/Chart.min.js"></script>
     <!-- start highcharts js -->
@@ -275,6 +299,8 @@
     <!-- others plugins -->
     <script src="assets/js/plugins.js"></script>
     <script src="assets/js/scripts.js"></script>
+	
+	
 </body>
 
 </html>
